@@ -1,7 +1,9 @@
 package com.devtech.accahelps.data.source
 
 import com.devtech.accahelps.domain.QuestionsSelector
-import com.devtech.accahelps.domain.store.AppDbStore
+import com.devtech.accahelps.domain.store.QuestionsStore
+import com.devtech.accahelps.domain.store.SectionsStore
+import com.devtech.accahelps.domain.store.SettingsStore
 import com.devtech.accahelps.model.AppSettings
 import com.devtech.accahelps.model.Question
 import com.devtech.accahelps.model.Section
@@ -11,16 +13,24 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
 
-class InMemoryDbStore() : AppDbStore {
+class InMemoryDbStore : QuestionsStore, SettingsStore, SectionsStore {
     private val questions = MutableStateFlow<Set<Question>>(emptySet())
     private var appSettings = MutableStateFlow(AppSettings())
+
+    private var sectionsFlow = MutableStateFlow(
+        listOf(
+            Section("A", 15),
+            Section("B", 5),
+            Section("C", 2),
+        )
+    )
 
     override fun getQuestionsFlow(): Flow<List<Question>> {
         return questions.map { it.toList() }
     }
 
-    override fun getQuestionsFlow(section: Section, source: Source): Flow<List<Question>> {
-        return getQuestionsFlow().map { it.filter { q -> q.source == source && q.section == section } }
+    override fun getQuestionsFlow(sectionId: String, source: Source): Flow<List<Question>> {
+        return getQuestionsFlow().map { it.filter { q -> q.source == source && q.sectionId == sectionId } }
     }
 
     override fun settingsFlow(): Flow<AppSettings> {
@@ -50,19 +60,32 @@ class InMemoryDbStore() : AppDbStore {
     }
 
     override suspend fun getRandom(
-        section: Section,
+        sectionId: String,
         sources: List<Source>,
-        limit: Int
+        importantLimit: Int,
+        totalLimit: Int
     ): List<Question> {
         return QuestionsSelector.selectedQuestions(
-            section,
+            sectionId,
             sources,
             questions.value.toList(),
-            limit
+            totalLimit
         )
     }
 
     override suspend fun hasData(): Boolean {
         return questions.value.isNotEmpty()
+    }
+
+    override suspend fun clearAndInsertSections(sections: List<Section>) {
+        sectionsFlow.value = sections
+    }
+
+    override fun getAllSections(): Flow<List<Section>> {
+        return sectionsFlow
+    }
+
+    override suspend fun getSection(id: String): Section? {
+        return sectionsFlow.value.firstOrNull { it.id == id }
     }
 }

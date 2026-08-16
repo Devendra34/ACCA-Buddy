@@ -1,12 +1,10 @@
-import com.devtech.accahelps.model.Section;
 import com.devtech.accahelps.model.Source;
 import kotlin.Boolean;
-import java.util.HashSet;
 
 CREATE TABLE IF NOT EXISTS QuestionEntity (
     id TEXT NOT NULL PRIMARY KEY, -- Unique ID (e.g., "Kaplan_SectionA_Q5")
     source TEXT AS Source NOT NULL,         -- "Kaplan", "BPP", "StudyHub"
-    section TEXT AS Section  NOT NULL,
+    sectionId TEXT NOT NULL,
     isImportant INTEGER AS Boolean DEFAULT 0,
 
     -- StudyHub Specific Fields (Nullable)
@@ -21,18 +19,18 @@ SELECT * FROM QuestionEntity;
 
 selectAllForSectionSouce:
 SELECT * FROM QuestionEntity
-WHERE section = :section AND  source = :source;
+WHERE sectionId = :sectionId AND  source = :source;
 
 -- Get X random important questions
 getRandomImportant:
 SELECT * FROM QuestionEntity
-WHERE section = :section AND source IN :sources AND isImportant = 1
+WHERE sectionId = :sectionId AND source IN :sources AND isImportant = 1
 ORDER BY RANDOM() LIMIT :limit;
 
 -- Get Y random questions that aren't the ones we already picked
 getRandom:
 SELECT * FROM QuestionEntity
-WHERE section = :section AND source IN :sources AND id NOT IN :excludedIds
+WHERE sectionId = :sectionId AND source IN :sources AND id NOT IN :excludedIds
 ORDER BY RANDOM() LIMIT :limit;
 
 insertOrAddQuestion:
@@ -50,27 +48,3 @@ WHERE id = :id;
 hasData:
 SELECT EXISTS(SELECT 1 FROM QuestionEntity LIMIT 1);
 
-
-
-
--- App Selections
-
-CREATE TABLE IF NOT EXISTS SectionSelectionEntity (
-    -- Use the 'AS' keyword to map the column to your Kotlin type
-    section TEXT AS Section NOT NULL PRIMARY KEY,
-    isEnabled INTEGER AS Boolean NOT NULL DEFAULT 0,
-    selectedSources TEXT AS HashSet<Source> NOT NULL
-);
-
-updateSectionSelection:
-INSERT OR REPLACE INTO SectionSelectionEntity
-VALUES  ?;
-
-
-getSelectionFor:
-SELECT * FROM SectionSelectionEntity
-WHERE section = :section;
-
-
-getSelections:
-SELECT * FROM SectionSelectionEntity;

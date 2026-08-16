@@ -25,7 +25,11 @@ fun QuestionPickerApp(
     appContainer: AppContainer = AppContainer.demo()
 ) {
     val viewModel: MainViewModel = viewModel(
-        factory = MainViewModelFactory(appContainer.repository, appContainer.syncRepository)
+        factory = MainViewModelFactory(
+            appContainer.questionRepository,
+            appContainer.appDbHelper.settingStore,
+            appContainer.syncRepository,
+        )
     )
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     AppTheme {

@@ -1,43 +1,43 @@
 package com.devtech.accahelps.data.repo
 
 import com.devtech.accahelps.domain.repo.IQuestionRepository
-import com.devtech.accahelps.domain.store.AppDbStore
-import com.devtech.accahelps.model.AppSettings
+import com.devtech.accahelps.domain.store.QuestionsStore
+import com.devtech.accahelps.domain.store.SectionsStore
 import com.devtech.accahelps.model.Question
 import com.devtech.accahelps.model.Section
 import com.devtech.accahelps.model.Source
 import kotlinx.coroutines.flow.Flow
 
 class DbQuestionsRepository(
-    private val appDbStore: AppDbStore
+    private val questionsStore: QuestionsStore,
+    private val sectionStore: SectionsStore,
 ) : IQuestionRepository {
 
     override fun getQuestionsFlow(): Flow<List<Question>> {
-        return appDbStore.getQuestionsFlow()
+        return questionsStore.getQuestionsFlow()
     }
 
-    override fun getQuestionsFlow(section: Section, source: Source): Flow<List<Question>> {
-        return appDbStore.getQuestionsFlow(section, source)
+    override fun getSectionsFlow(): Flow<List<Section>> {
+        return sectionStore.getAllSections()
     }
 
-    override val settingsFlow: Flow<AppSettings>
-        get() = appDbStore.settingsFlow()
+    override fun getQuestionsFlow(sectionId: String, source: Source): Flow<List<Question>> {
+        return questionsStore.getQuestionsFlow(sectionId, source)
+    }
 
-    override suspend fun generateRandom(section: Section, sources: List<Source>): List<Question> {
-        val limit = limitFor(section)
-        return appDbStore.getRandom(section, sources, limit)
+    override suspend fun generateRandom(sectionId: String, sources: List<Source>): List<Question> {
+        val section = sectionStore.getSection(sectionId)
+        val importantLimit = section?.importantQuestions ?: 0
+        val totalLimit = section?.totalQuestions ?: 0
+        return questionsStore.getRandom(sectionId, sources, importantLimit, totalLimit)
     }
 
     override suspend fun addQuestions(questions: List<Question>) {
-        appDbStore.insertOrUpdateQuestions(questions)
+        questionsStore.insertOrUpdateQuestions(questions)
     }
 
     override suspend fun deleteQuestion(question: Question) {
-        appDbStore.deleteQuestion(question)
-    }
-
-    override suspend fun saveSettings(settings: AppSettings) {
-        appDbStore.updateAppSettings(settings)
+        questionsStore.deleteQuestion(question)
     }
 
     override fun canEdit(): Boolean {

@@ -49,7 +49,11 @@ fun SectionCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(section.section.label, style = MaterialTheme.typography.titleLarge)
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = section.sectionId,
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Switch(
                     checked = section.isEnabled.value,
                     onCheckedChange = { section.isEnabled.value = it }

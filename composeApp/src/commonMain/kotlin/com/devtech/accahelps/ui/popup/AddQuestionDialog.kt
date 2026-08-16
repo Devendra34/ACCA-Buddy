@@ -23,12 +23,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.devtech.accahelps.domain.QuestionRangeInput
-import com.devtech.accahelps.model.Section
 import com.devtech.accahelps.model.Source
 
 @Composable
 fun AddQuestionDialog(
-    section: Section,
+    section: String,
     selectedSource: Source,
     onDismiss: () -> Unit,
     onConfirm: (QuestionRangeInput) -> Unit
@@ -105,7 +104,7 @@ fun AddQuestionDialog(
 @Composable
 private fun AddQuestionsTitle(
     modifier: Modifier = Modifier,
-    section: Section,
+    sectionId: String,
     selectedSource: Source
 ) {
 
@@ -120,7 +119,7 @@ private fun AddQuestionsTitle(
             withStyle(
                 style = headlineStyle.toSpanStyle().copy(fontWeight = FontWeight.Bold)
             ) {
-                append("${section.label} - ${selectedSource.label}")
+                append("$sectionId - ${selectedSource.label}")
             }
         },
         textAlign = TextAlign.Center

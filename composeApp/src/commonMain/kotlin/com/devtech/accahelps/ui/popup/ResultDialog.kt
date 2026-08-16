@@ -39,7 +39,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.devtech.accahelps.domain.QuestionsSelector
 import com.devtech.accahelps.model.Question
-import com.devtech.accahelps.model.Section
 import com.devtech.accahelps.shareToWhatsApp
 import com.devtech.accahelps.toClipEntry
 import kotlinx.coroutines.launch
@@ -47,7 +46,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ResultDialog(
-    questionsBySection: Map<Section, List<Question>>,
+    questionsBySection: Map<String, List<Question>>,
     onDismiss: () -> Unit
 ) {
     Dialog(
@@ -81,10 +80,10 @@ fun ResultDialog(
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
                 LazyColumn(modifier = Modifier.weight(1f)) {
-                    questionsBySection.forEach { (section, questions) ->
+                    questionsBySection.forEach { (sectionId, questions) ->
                         item {
                             Text(
-                                text = section.label,
+                                text = sectionId,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(vertical = 8.dp)

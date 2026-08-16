@@ -23,6 +23,7 @@ fun AppContent(
     viewModel: MainViewModel,
 ) {
 
+    val sections by viewModel.sectionsFlow.collectAsStateWithLifecycle()
     val selectedSectionSource by viewModel.addQuestionsFor.collectAsStateWithLifecycle()
     val viewForSectionSource by viewModel.viewQuestionsFor.collectAsStateWithLifecycle()
 
@@ -33,13 +34,13 @@ fun AppContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 160.dp)
     ) {
-        items(viewModel.sections) { section ->
+        items(sections) { section ->
             SectionCard(
                 section = section,
                 onEditSource = { it: Source ->
-                    viewModel.addQuestionsFor.value = it to section.section
+                    viewModel.addQuestionsFor.value = it to section.sectionId
                 }.takeIf { viewModel.canEditQuestions },
-                onViewSource = { viewModel.viewQuestionsFor.value = it to section.section },
+                onViewSource = { viewModel.viewQuestionsFor.value = it to section.sectionId },
             )
         }
     }

@@ -5,40 +5,27 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.devtech.accahelps.AppDatabase
 import com.devtech.accahelps.QuestionEntity
-import com.devtech.accahelps.SectionSelectionEntity
 import com.devtech.accahelps.data.model.toDomainModel
-import com.devtech.accahelps.domain.store.AppDbStore
-import com.devtech.accahelps.model.AppSettings
+import com.devtech.accahelps.domain.store.QuestionsStore
 import com.devtech.accahelps.model.Question
-import com.devtech.accahelps.model.Section
-import com.devtech.accahelps.model.SectionSelection
 import com.devtech.accahelps.model.Source
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
-class AppDbHelper(private val database: AppDatabase) : AppDbStore {
+class QuestionsStoreDb(private val database: AppDatabase) : QuestionsStore {
 
-    val queries get() = database.appDatabaseQueries
+    val queries get() = database.questionsQueries
     private val context = Dispatchers.IO
 
     override fun getQuestionsFlow(): Flow<List<Question>> {
         return queries.selectAll().mapToDomainFlow()
     }
 
-    override fun getQuestionsFlow(section: Section, source: Source): Flow<List<Question>> {
-        return queries.selectAllForSectionSouce(section, source).mapToDomainFlow()
+    override fun getQuestionsFlow(sectionId: String, source: Source): Flow<List<Question>> {
+        return queries.selectAllForSectionSouce(sectionId, source).mapToDomainFlow()
     }
-
-    override fun settingsFlow(): Flow<AppSettings> = queries.getSelections()
-        .asFlow()
-        .mapToList(context)
-        .map { selectionEntities ->
-            AppSettings(selectionEntities.map {
-                SectionSelection(it.section, it.isEnabled, it.selectedSources)
-            })
-        }
 
     override suspend fun clearAndInsertQuestions(questions: List<Question>) {
         withContext(context) {
@@ -70,35 +57,24 @@ class AppDbHelper(private val database: AppDatabase) : AppDbStore {
     }
 
     override suspend fun getRandom(
-        section: Section,
+        sectionId: String,
         sources: List<Source>,
-        limit: Int
+        importantLimit: Int,
+        totalLimit: Int
     ): List<Question> {
-        val importantQuestions = queries.getRandomImportant(section, sources, 1)
+        val importantQuestions = queries
+            .getRandomImportant(sectionId, sources, importantLimit.toLong())
             .executeAsList()
 
         val excludedIds = importantQuestions.map { it.id }
-        val pendingLimit = limit - importantQuestions.size
+        val pendingLimit = totalLimit - importantQuestions.size
         val otherQuestions = queries.getRandom(
-            section, sources, excludedIds, pendingLimit.toLong()
+            sectionId, sources, excludedIds, pendingLimit.toLong()
         ).executeAsList()
 
         return (importantQuestions + otherQuestions).map { it.toDomainModel() }
     }
 
-    override suspend fun updateAppSettings(appSettings: AppSettings) {
-        withContext(context) {
-            database.transaction {
-                appSettings.sectionSelections.forEach {
-                    queries.updateSectionSelection(
-                        SectionSelectionEntity(
-                            it.section, it.isEnabled, it.selectedSources
-                        )
-                    )
-                }
-            }
-        }
-    }
 
     override suspend fun hasData(): Boolean {
         return queries.hasData().executeAsOneOrNull() ?: false
@@ -114,10 +90,10 @@ class AppDbHelper(private val database: AppDatabase) : AppDbStore {
         return QuestionEntity(
             id = id,
             source = source,
-            section = section,
+            sectionId = sectionId,
             isImportant = isImportant,
-            questionType = (this as? Question.StudyHub)?.questionType,
-            chapterNumber = (this as? Question.StudyHub)?.chapterNumber,
+            questionType = questionType,
+            chapterNumber = chapterNumber,
             questionNumber = questionNumber,
         )
     }

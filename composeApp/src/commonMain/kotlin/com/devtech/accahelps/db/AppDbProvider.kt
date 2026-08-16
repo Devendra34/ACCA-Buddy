@@ -5,13 +5,30 @@ import app.cash.sqldelight.db.SqlDriver
 import com.devtech.accahelps.AppDatabase
 import com.devtech.accahelps.QuestionEntity
 import com.devtech.accahelps.SectionSelectionEntity
-import com.devtech.accahelps.model.Section
+import com.devtech.accahelps.data.source.QuestionsStoreDb
+import com.devtech.accahelps.data.source.SectionsStoreDb
+import com.devtech.accahelps.data.source.SettingsStoreDb
+import com.devtech.accahelps.domain.store.AppDatabaseHelper
+import com.devtech.accahelps.domain.store.QuestionsStore
+import com.devtech.accahelps.domain.store.SectionsStore
+import com.devtech.accahelps.domain.store.SettingsStore
 import com.devtech.accahelps.model.Source
-import com.devtech.accahelps.model.toSectionOrNull
 import com.devtech.accahelps.model.toSourceOrNull
 
 interface DriverFactory {
     fun createDriver(): SqlDriver
+}
+
+fun provideAppDb(driverFactory: DriverFactory): AppDatabaseHelper {
+    val database = createDatabase(driverFactory)
+    return provideAppDb(database)
+}
+fun provideAppDb(appDatabase: AppDatabase): AppDatabaseHelper {
+    return object : AppDatabaseHelper {
+        override val settingStore: SettingsStore = SettingsStoreDb(appDatabase)
+        override val questionsStore: QuestionsStore= QuestionsStoreDb(appDatabase)
+        override val sectionsStore: SectionsStore= SectionsStoreDb(appDatabase)
+    }
 }
 
 expect fun provideDriverFactory(): DriverFactory
@@ -19,14 +36,11 @@ expect fun provideDriverFactory(): DriverFactory
 fun createDatabase(driverFactory: DriverFactory): AppDatabase {
     val driver = driverFactory.createDriver()
     val sourceAdapter = SourceAdapter()
-    val sectionAdapter = SectionAdapter()
     return AppDatabase(
         driver, QuestionEntity.Adapter(
-            sectionAdapter = sectionAdapter,
             sourceAdapter = sourceAdapter,
         ),
         SectionSelectionEntity.Adapter(
-            sectionAdapter = sectionAdapter,
             selectedSourcesAdapter = SourcesAdapter(),
         )
     )
@@ -34,15 +48,6 @@ fun createDatabase(driverFactory: DriverFactory): AppDatabase {
 
 const val DB_NAME = "acca_buddy.db"
 
-class SectionAdapter : ColumnAdapter<Section, String> {
-    override fun decode(databaseValue: String): Section {
-        return databaseValue.toSectionOrNull()!!
-    }
-
-    override fun encode(value: Section): String {
-        return value.id
-    }
-}
 
 class SourceAdapter : ColumnAdapter<Source, String> {
     override fun decode(databaseValue: String): Source {

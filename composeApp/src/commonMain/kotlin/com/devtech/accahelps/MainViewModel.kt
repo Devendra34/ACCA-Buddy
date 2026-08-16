@@ -9,9 +9,9 @@ import com.devtech.accahelps.domain.QuestionFactory
 import com.devtech.accahelps.domain.QuestionRangeInput
 import com.devtech.accahelps.domain.repo.IQuestionRepository
 import com.devtech.accahelps.domain.repo.SyncRepository
+import com.devtech.accahelps.domain.store.SettingsStore
 import com.devtech.accahelps.model.AppSettings
 import com.devtech.accahelps.model.Question
-import com.devtech.accahelps.model.Section
 import com.devtech.accahelps.model.SectionSelection
 import com.devtech.accahelps.model.SectionState
 import com.devtech.accahelps.model.Source
@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,12 +33,13 @@ import kotlin.reflect.KClass
 
 data class GeneratorUiState(
     val isPopupVisible: Boolean = false,
-    val selectedQuestions: Map<Section, List<Question>> = emptyMap(),
+    val selectedQuestions: Map<String, List<Question>> = emptyMap(),
     val isLoading: Boolean = false
 )
 
 class MainViewModel(
-    private val repository: IQuestionRepository,
+    private val questionRepository: IQuestionRepository,
+    private val settingsStore: SettingsStore,
     private val syncRepository: SyncRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(GeneratorUiState())
@@ -46,24 +48,24 @@ class MainViewModel(
     private val _isSyncing = MutableStateFlow(false)
     val isSyncing = _isSyncing.asStateFlow()
 
-    val canEditQuestions = repository.canEdit()
+    val canEditQuestions = questionRepository.canEdit()
 
-    val viewQuestionsFor = MutableStateFlow<Pair<Source, Section>?>(null)
+    val viewQuestionsFor = MutableStateFlow<Pair<Source, String>?>(null)
 
-    val addQuestionsFor = MutableStateFlow<Pair<Source, Section>?>(null)
+    val addQuestionsFor = MutableStateFlow<Pair<Source, String>?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val viewQuestions = viewQuestionsFor.flatMapLatest {
         if (it == null) return@flatMapLatest flowOf(emptyList())
-        repository.getQuestionsFlow(it.second, it.first)
+        questionRepository.getQuestionsFlow(it.second, it.first)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
 
-    val sections = listOf(
-        SectionState(Section.A),
-        SectionState(Section.B),
-        SectionState(Section.C),
-    )
+    val sectionsFlow = questionRepository.getSectionsFlow()
+        .map { it.map { section -> SectionState(section.id) } }
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    private suspend fun getSections() = sectionsFlow.first { it.isNotEmpty() }
 
     init {
         viewModelScope.launch {
@@ -72,10 +74,11 @@ class MainViewModel(
     }
 
     private suspend fun loadAndObserveSelections() {
-        val savedSettings = repository.settingsFlow.first()
+        val savedSettings = settingsStore.settingsFlow().first()
+        val sections = getSections()
 
         savedSettings.sectionSelections.forEach { saved ->
-            sections.find { it.section == saved.section }?.let { state ->
+            sections.find { it.sectionId == saved.sectionId }?.let { state ->
                 state.isEnabled.value = saved.isEnabled
                 state.sourcesState.forEach { sourceState ->
                     sourceState.isSelected.value =
@@ -87,18 +90,19 @@ class MainViewModel(
         snapshotFlow {
             sections.map {
                 SectionSelection(
-                    it.section,
+                    it.sectionId,
                     it.isEnabled.value,
                     it.sourcesState.filter { s -> s.isSelected.value }.map { s -> s.source }
                         .toHashSet()
                 )
             }
         }.collect { currentSelections ->
-            repository.saveSettings(AppSettings(sectionSelections = currentSelections))
+            settingsStore.updateAppSettings(AppSettings(sectionSelections = currentSelections))
         }
     }
 
     fun generateQuestions() {
+        val sections = sectionsFlow.value
         viewModelScope.launch(Dispatchers.Default) {
             _uiState.update { it.copy(isLoading = true) }
 
@@ -106,8 +110,11 @@ class MainViewModel(
                 val selectedSources =
                     selectedSection.sourcesState.filter { sourceState -> sourceState.isSelected.value }
                         .map { it.source }
-                val questions = repository.generateRandom(selectedSection.section, selectedSources)
-                selectedSection.section to questions
+                val questions = questionRepository.generateRandom(
+                    selectedSection.sectionId,
+                    selectedSources
+                )
+                selectedSection.sectionId to questions
             }
 
             _uiState.update {
@@ -129,13 +136,13 @@ class MainViewModel(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             val newOnes = QuestionFactory.newQuestions(input)
-            repository.addQuestions(newOnes)
+            questionRepository.addQuestions(newOnes)
         }
     }
 
     fun removeQuestion(question: Question) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.deleteQuestion(question)
+            questionRepository.deleteQuestion(question)
         }
     }
 
@@ -169,12 +176,13 @@ class MainViewModel(
 
 class MainViewModelFactory(
     private val repository: IQuestionRepository,
+    private val settingsStore: SettingsStore,
     private val syncRepository: SyncRepository,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
         if (modelClass == MainViewModel::class) {
             @Suppress("UNCHECKED_CAST")
-            return MainViewModel(repository, syncRepository) as T
+            return MainViewModel(repository, settingsStore, syncRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

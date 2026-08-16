@@ -1,75 +1,46 @@
 package com.devtech.accahelps.model
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
-sealed class Question(
+data class Question(
     val source: Source,
+    val sectionId: String,
+    val questionNumber: String,
+    val isImportant: Boolean = false,
+
+    // StudyHub-specific properties
+    val questionType: String? = null,
+    val chapterNumber: String? = null,
 ) {
-    abstract val section: Section
+    val id: String
+        get() = toString()
 
-    abstract val id: String
+    val fullPath: String
+        get() {
+            val items = listOf(source.label, sourcePath)
+            return items.joinToString(PATH_SEPARATOR)
+        }
 
-    abstract val fullPath: String
+    val sourcePath: String
+        get() {
+            val items = mutableListOf<String>()
+            questionType?.takeIf { it.isNotBlank() }?.let { items.add(it) }
+            chapterNumber?.takeIf { it.isNotBlank() }?.let { items.add("CH-$it") }
+            items.add("Q$questionNumber${importantSuffix()}")
+            return items.joinToString(PATH_SEPARATOR)
+        }
 
-    abstract val sourcePath: String
+    private fun importantSuffix(): String =
+        if (isImportant) " ⭐" else ""
 
-    abstract val isImportant: Boolean
-
-    abstract val questionNumber: String
-
-    @Serializable
-    @SerialName("Kaplan")
-    data class Kaplan(
-        override val questionNumber: String,
-        override val section: Section,
-        override val isImportant: Boolean = false
-    ) : Question(source = Source.Kaplan) {
-        override val id: String = toString()
-        override val fullPath: String get() = "${source.label}: Q$questionNumber${if (isImportant) " ⭐" else ""}"
-
-        override val sourcePath: String get() = "Q$questionNumber${if (isImportant) " ⭐" else ""}"
-    }
-
-    @Serializable
-    @SerialName("Bpp")
-    data class Bpp(
-        override val questionNumber: String,
-        override val section: Section,
-        override val isImportant: Boolean = false
-    ) : Question(source = Source.Bpp) {
-        override val id: String = toString()
-
-        override val fullPath: String get() = "${source.label}: Q$questionNumber${if (isImportant) " ⭐" else ""}"
-
-        override val sourcePath: String get() = "Q$questionNumber${if (isImportant) " ⭐" else ""}"
-    }
-
-    @Serializable
-    @SerialName("StudyHub")
-    data class StudyHub(
-        override val section: Section,
-        val questionType: String,
-        val chapterNumber: String,
-        override val questionNumber: String,
-        override val isImportant: Boolean = false
-    ) : Question(source = Source.StudyHub) {
-        override val id: String = toString()
-
-        override val fullPath: String
-            get() =
-                "${source.label}: $questionType: CH-$chapterNumber, Q-$questionNumber${if (isImportant) " ⭐" else ""}"
-
-        override val sourcePath: String
-            get() =
-                "$questionType: CH-$chapterNumber, Q-$questionNumber${if (isImportant) " ⭐" else ""}"
+    companion object {
+        private const val PATH_SEPARATOR = ": "
     }
 }
 
 
 fun List<Question>.questionFor(
-    section: Section,
+    sectionId: String,
     source: Source
-): List<Question> = filter { q -> q.section == section && q.source == source }
+): List<Question> = filter { q -> q.sectionId == sectionId && q.source == source }
