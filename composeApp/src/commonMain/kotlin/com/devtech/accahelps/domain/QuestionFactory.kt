@@ -1,12 +1,11 @@
 package com.devtech.accahelps.domain
 
 import com.devtech.accahelps.model.Question
-import com.devtech.accahelps.model.Section
 import com.devtech.accahelps.model.Source
 
 data class QuestionRangeInput(
     val source: Source,
-    val section: Section,
+    val sectionId: String,
     val inputRange: String,
     val type: String = "",
     val chapter: String = "",
@@ -59,16 +58,13 @@ object QuestionFactory {
         input: QuestionRangeInput,
         questionNumber: String,
     ): Question {
-        return when (input.source) {
-            Source.Kaplan -> Question.Kaplan(questionNumber, input.section, input.isImportant)
-            Source.Bpp -> Question.Bpp(questionNumber, input.section, input.isImportant)
-            Source.StudyHub -> Question.StudyHub(
-                input.section,
-                input.type,
-                input.chapter,
-                questionNumber,
-                input.isImportant
-            )
-        }
+        return Question(
+            source = input.source,
+            sectionId = input.sectionId,
+            questionNumber = questionNumber,
+            isImportant = input.isImportant,
+            questionType = input.type,
+            chapterNumber = input.chapter,
+        )
     }
 }

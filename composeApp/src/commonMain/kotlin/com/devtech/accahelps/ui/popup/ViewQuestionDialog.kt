@@ -28,13 +28,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devtech.accahelps.MainViewModel
 import com.devtech.accahelps.model.Question
-import com.devtech.accahelps.model.Section
 import com.devtech.accahelps.model.Source
 
 @Composable
 fun ViewQuestionsDialog(
     source: Source,
-    section: Section,
+    section: String,
     viewModel: MainViewModel,
     onDismiss: () -> Unit,
 ) {
@@ -43,7 +42,7 @@ fun ViewQuestionsDialog(
         onDismissRequest = onDismiss,
         title = {
             Column {
-                Text(section.label)
+                Text(section)
                 Text(
                     text = source.label,
                     style = MaterialTheme.typography.headlineSmall,

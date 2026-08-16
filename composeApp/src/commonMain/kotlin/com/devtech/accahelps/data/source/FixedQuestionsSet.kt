@@ -3,7 +3,6 @@ package com.devtech.accahelps.data.source
 import com.devtech.accahelps.domain.QuestionFactory
 import com.devtech.accahelps.domain.QuestionRangeInput
 import com.devtech.accahelps.model.Question
-import com.devtech.accahelps.model.Section
 import com.devtech.accahelps.model.Source
 
 object FixedQuestionsSet {
@@ -16,7 +15,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Kaplan,
-                    Section.A,
+                    "A",
                     "1-229"
                 )
             )
@@ -27,7 +26,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Kaplan,
-                    Section.B,
+                    "B",
                     "230-242",
                     isImportant = true
                 )
@@ -37,7 +36,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Kaplan,
-                    Section.B,
+                    "B",
                     "243-262"
                 )
             )
@@ -48,7 +47,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Kaplan,
-                    Section.C,
+                    "C",
                     "263-291"
                 )
             )
@@ -57,7 +56,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Kaplan,
-                    Section.C,
+                    "C",
                     "292-314",
                     isImportant = true
                 )
@@ -69,7 +68,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Bpp,
-                    Section.A,
+                    "A",
                     "1-30, 32-61, 97-131, 171-200, 264-293",
                 )
             )
@@ -80,7 +79,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Bpp,
-                    Section.B,
+                    "B",
                     "62, 67, 72, 77, 82, 87, 92",
                     isImportant = true
                 )
@@ -90,7 +89,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Bpp,
-                    Section.B,
+                    "B",
                     "31, 132, 137, 142, 147, 152, 157, 201, 206, 211, 216, 221, 226, 231, 236, 241, 246, 294, 299, 304, 309, 314, 319, 324, 329",
                 )
             )
@@ -101,7 +100,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Bpp,
-                    Section.C,
+                    "C",
                     "162-170, 251-263",
                 )
             )
@@ -110,7 +109,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.Bpp,
-                    Section.C,
+                    "C",
                     "334-350",
                     isImportant = true
                 )
@@ -124,7 +123,7 @@ object FixedQuestionsSet {
                 QuestionFactory.newQuestions(
                     QuestionRangeInput(
                         Source.StudyHub,
-                        Section.A,
+                        "A",
                         "1-5",
                         "Quiz",
                         ch.toString(),
@@ -145,7 +144,7 @@ object FixedQuestionsSet {
                 QuestionFactory.newQuestions(
                     QuestionRangeInput(
                         Source.StudyHub,
-                        Section.A,
+                        "A",
                         "1-$count",
                         "OT Revision",
                         chapter.toString(),
@@ -161,7 +160,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.C,
+                    "C",
                     "1-3",
                     "Revision Case",
                     "15",
@@ -173,7 +172,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.C,
+                    "C",
                     "6-10",
                     "Revision Case",
                     "16",
@@ -185,7 +184,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.C,
+                    "C",
                     "12",
                     "Revision Case",
                     "17",
@@ -197,7 +196,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.C,
+                    "C",
                     "1, 7",
                     "Revision Case",
                     "18",
@@ -210,7 +209,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.C,
+                    "C",
                     "1",
                     "Study Question",
                     "15",
@@ -222,7 +221,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.C,
+                    "C",
                     "1-3",
                     "Study Question",
                     "16",
@@ -234,7 +233,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.C,
+                    "C",
                     "1, 2",
                     "Study Question",
                     "17",
@@ -246,7 +245,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.C,
+                    "C",
                     "1, 2",
                     "Study Question",
                     "18",
@@ -260,7 +259,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.B,
+                    "B",
                     "1",
                     "Revision Case",
                     "2",
@@ -272,7 +271,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.B,
+                    "B",
                     "4",
                     "Revision Case",
                     "3",
@@ -284,7 +283,7 @@ object FixedQuestionsSet {
             QuestionFactory.newQuestions(
                 QuestionRangeInput(
                     Source.StudyHub,
-                    Section.B,
+                    "B",
                     "4",
                     "Study Question",
                     "3",

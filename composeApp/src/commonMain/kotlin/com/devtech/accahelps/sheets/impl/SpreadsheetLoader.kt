@@ -21,9 +21,8 @@ class SpreadsheetLoader(
     }
 
 
-    suspend fun fetchTable(): List<List<String>> {
+    suspend fun fetchTable(url: String): List<List<String>> {
         return try {
-            val url = "https://docs.google.com/spreadsheets/d/$sheetId/export?format=csv"
             val response = client.get(url).bodyAsText()
 
             parser.parse(response)
@@ -33,5 +32,3 @@ class SpreadsheetLoader(
         }
     }
 }
-
-private const val sheetId = "1pIwMEt1CvdqKfw9K04Hccw2H7DlfnH_pCX7_4G1M6QQ"

@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 
 // Data model for our state
 data class SectionState(
-    val section: Section,
+    val sectionId: String,
     val isEnabled: MutableState<Boolean> = mutableStateOf(true),
     val sourcesState: List<SourceState> = Source.entries.map {
         SourceState(it)

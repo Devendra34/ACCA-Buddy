@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SectionSelection(
-    val section: Section,
+    val sectionId: String,
     val isEnabled: Boolean,
     val selectedSources: HashSet<Source>
 )

@@ -1,7 +1,6 @@
 package com.devtech.accahelps.domain
 
 import com.devtech.accahelps.model.Question
-import com.devtech.accahelps.model.Section
 import com.devtech.accahelps.model.Source
 import com.devtech.accahelps.model.questionFor
 import com.devtech.accahelps.util.TimeFormatter
@@ -9,13 +8,13 @@ import com.devtech.accahelps.util.TimeFormatter
 object QuestionsSelector {
 
     fun selectedQuestions(
-        section: Section,
+        sectionId: String,
         sources: List<Source>,
         questions: List<Question>,
         limit: Int,
     ): List<Question> {
 
-        val pool = sources.flatMap { questions.questionFor(section, it) }
+        val pool = sources.flatMap { questions.questionFor(sectionId, it) }
 
         val importantOnes = pool.filter { it.isImportant }.shuffled()
         val normalOnes = pool.filter { !it.isImportant }.shuffled()
@@ -34,15 +33,15 @@ object QuestionsSelector {
     }
 
 
-    fun formatQuestions(questionsBySection: Map<Section, List<Question>>): String {
+    fun formatQuestions(questionsBySection: Map<String, List<Question>>): String {
         val sb = StringBuilder()
         sb.append("--- GENERATED QUESTION PAPER ---\n\n")
 
-        questionsBySection.keys.sorted().forEach { section ->
-            val questions = questionsBySection[section] ?: emptyList()
+        questionsBySection.keys.sortedBy { it }.forEach { sectionId ->
+            val questions = questionsBySection[sectionId] ?: emptyList()
             if (questions.isNotEmpty()) {
-                sb.append("${section.label}\n")
-                sb.append("=".repeat(section.label.length + 9)).append("\n")
+                sb.append("${sectionId}\n")
+                sb.append("=".repeat(sectionId.length + 9)).append("\n")
 
                 questions.forEachIndexed { index, question ->
                     sb.append("${index + 1}. ${question.fullPath}\n")

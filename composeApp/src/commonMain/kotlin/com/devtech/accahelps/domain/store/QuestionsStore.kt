@@ -1,18 +1,14 @@
 package com.devtech.accahelps.domain.store
 
-import com.devtech.accahelps.model.AppSettings
 import com.devtech.accahelps.model.Question
-import com.devtech.accahelps.model.Section
 import com.devtech.accahelps.model.Source
 import kotlinx.coroutines.flow.Flow
 
-interface AppDbStore {
+interface QuestionsStore {
 
     fun getQuestionsFlow(): Flow<List<Question>>
 
-    fun getQuestionsFlow(section: Section, source: Source): Flow<List<Question>>
-
-    fun settingsFlow(): Flow<AppSettings>
+    fun getQuestionsFlow(sectionId: String, source: Source): Flow<List<Question>>
 
     suspend fun clearAndInsertQuestions(questions: List<Question>)
 
@@ -20,9 +16,7 @@ interface AppDbStore {
 
     suspend fun deleteQuestion(question: Question)
 
-    suspend fun updateAppSettings(appSettings: AppSettings)
-
-    suspend fun getRandom(section: Section, sources: List<Source>, limit: Int): List<Question>
+    suspend fun getRandom(sectionId: String, sources: List<Source>, importantLimit: Int, totalLimit: Int): List<Question>
 
     suspend fun hasData(): Boolean
 }

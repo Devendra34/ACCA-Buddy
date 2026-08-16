@@ -1,0 +1,25 @@
+import com.devtech.accahelps.model.Source;
+import java.util.HashSet;
+import kotlin.Boolean;
+
+-- App Selections
+
+CREATE TABLE IF NOT EXISTS SectionSelectionEntity (
+    -- Use the 'AS' keyword to map the column to your Kotlin type
+    sectionId TEXT NOT NULL PRIMARY KEY,
+    isEnabled INTEGER AS Boolean NOT NULL DEFAULT 0,
+    selectedSources TEXT AS HashSet<Source> NOT NULL
+);
+
+updateSectionSelection:
+INSERT OR REPLACE INTO SectionSelectionEntity
+VALUES  ?;
+
+
+getSelectionFor:
+SELECT * FROM SectionSelectionEntity
+WHERE sectionId = :section;
+
+
+getSelections:
+SELECT * FROM SectionSelectionEntity;

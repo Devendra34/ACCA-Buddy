@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS SectionEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    totalQuestions INTEGER NOT NULL,
+    importantQuestions INTEGER
+);
+
+
+getAllSections:
+SELECT * FROM SectionEntity;
+
+
+getSection:
+SELECT * FROM SectionEntity
+WHERE id = :id;
+
+insertOrAddSection:
+INSERT OR REPLACE INTO SectionEntity
+VALUES ?;
+
+clearAll:
+DELETE FROM SectionEntity;
